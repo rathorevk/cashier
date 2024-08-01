@@ -1,5 +1,5 @@
 defmodule Cashier.ProductsTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   alias Cashier.Products
   alias Cashier.Products.Product

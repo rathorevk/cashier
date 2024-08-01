@@ -47,9 +47,13 @@ defmodule Cashier.Products do
   """
   def create_product(attrs \\ %{}) do
     with {:ok, %Product{} = product} <- Product.validate(attrs),
+         {:error, :NOT_FOUND} <- get_product(attrs.code),
          {:ok, %Product{} = product} <- ProductStore.insert(product) do
       {:ok, product}
     else
+      {:ok, %Product{}} ->
+        {:error, :PRODUCT_EXISTS}
+
       {:error, _reason} = error ->
         error
     end
@@ -67,8 +71,9 @@ defmodule Cashier.Products do
       {:error, any()}
 
   """
-  def update_product(%Product{} = product, attrs) do
+  def update_product(%Product{code: code} = product, attrs) do
     with {:ok, %Product{} = product} <- Product.validate(product, attrs),
+         {:ok, %Product{}} <- get_product(code),
          {:ok, %Product{} = product} <- ProductStore.insert(product) do
       {:ok, product}
     else

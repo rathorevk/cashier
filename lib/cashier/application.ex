@@ -12,6 +12,7 @@ defmodule Cashier.Application do
       # Start a worker by calling: Cashier.Worker.start_link(arg)
       # {Cashier.Worker, arg},
       {Cashier.Products.ProductStore, []},
+      {Cashier.Discounts.DiscountStore, []},
       # Start to serve requests, typically the last entry
       CashierWeb.Endpoint
     ]
