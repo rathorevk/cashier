@@ -8,15 +8,13 @@ defmodule Cashier.DiscountsFixtures do
   Generate a discount.
   """
   def discount_fixture(attrs \\ %{}) do
-    product = Cashier.ProductsFixtures.product_fixture()
-
     {:ok, discount} =
       attrs
       |> Enum.into(%{
         code: "some code",
         name: "some name",
-        type: "fixed",
-        product_id: product.code,
+        type: :fixed,
+        product_id: attrs[:product_id] || Cashier.ProductsFixtures.product_fixture().code,
         threshold_qty: 2,
         value: 1
       })

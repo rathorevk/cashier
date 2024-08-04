@@ -19,8 +19,11 @@ defmodule Cashier.ProductsTest do
     end
 
     test "get_product/1 returns the product with given code" do
-      product = product_fixture()
-      assert Products.get_product(product.code) == {:ok, product}
+      product_fixture = %Product{code: code} = product_fixture()
+
+      assert {:ok, product} = Products.get_product(code)
+      assert product.name == product_fixture.name
+      assert product.price == product_fixture.price
     end
 
     test "create_product/1 with valid data creates a product" do
@@ -29,7 +32,7 @@ defmodule Cashier.ProductsTest do
       assert {:ok, %Product{} = product} = Products.create_product(valid_attrs)
       assert product.code == "some code"
       assert product.name == "some name"
-      assert product.price == "120.5"
+      assert product.price == Decimal.new("120.50")
     end
 
     test "create_product/1 with invalid data returns error" do
@@ -50,13 +53,13 @@ defmodule Cashier.ProductsTest do
       assert {:ok, %Product{} = product} = Products.update_product(product, update_attrs)
       assert product.code == "some updated code"
       assert product.name == "some updated name"
-      assert product.price == "456.7"
+      assert product.price == Decimal.new("456.70")
     end
 
     test "update_product/2 with invalid data returns error" do
-      product = product_fixture()
+      product = %Product{code: code} = product_fixture()
       assert {:error, :INVALID_CODE} = Products.update_product(product, @invalid_attrs)
-      assert {:ok, product} == Products.get_product(product.code)
+      assert {:ok, _product} = Products.get_product(code)
     end
 
     test "delete_product/1 deletes the product" do

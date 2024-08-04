@@ -33,6 +33,10 @@ defmodule Cashier.Products.ProductStore do
     GenServer.call(__MODULE__, {:get_product, code})
   end
 
+  def get_products(codes) do
+    GenServer.call(__MODULE__, {:get_products, codes})
+  end
+
   def delete(%Product{} = product) do
     GenServer.call(__MODULE__, {:delete_product, product})
   end
@@ -56,6 +60,7 @@ defmodule Cashier.Products.ProductStore do
   @impl true
   def handle_call({:add_product, %Product{} = product}, _from, state) do
     %Product{code: code, name: name, price: price} = product
+
     :ets.insert(@table_name, {code, name, price})
     {:reply, {:ok, product}, state}
   end
@@ -68,6 +73,17 @@ defmodule Cashier.Products.ProductStore do
   def handle_call({:get_product, code}, _from, state) do
     product = :ets.lookup(@table_name, code) |> format_product()
     {:reply, product, state}
+  end
+
+  def handle_call({:get_products, codes}, _from, state) do
+    match_spec =
+      for code <- codes do
+        {{code, :"$2", :"$3"}, [], [:"$_"]}
+      end
+
+    products = @table_name |> :ets.select(match_spec) |> format_products()
+
+    {:reply, products, state}
   end
 
   def handle_call(:get_all_products, _from, state) do

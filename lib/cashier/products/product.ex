@@ -29,7 +29,8 @@ defmodule Cashier.Products.Product do
         {:error, :INVALID_PRICE}
 
       true ->
-        {:ok, %__MODULE__{code: code, name: name, price: price}}
+        price = (is_float(price) && Decimal.from_float(price)) || Decimal.new(price)
+        {:ok, %__MODULE__{code: code, name: name, price: Decimal.round(price, 2)}}
     end
   end
 
@@ -39,7 +40,8 @@ defmodule Cashier.Products.Product do
 
   defp valid_price?(price) do
     try do
-      price = Decimal.new(price)
+      price = (is_float(price) && Decimal.from_float(price)) || Decimal.new(price)
+
       Decimal.compare(price, Decimal.new(0)) != :lt
     rescue
       _exception ->

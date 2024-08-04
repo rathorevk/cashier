@@ -13,7 +13,7 @@ defmodule Cashier.ProductsFixtures do
       |> Enum.into(%{
         code: "some code",
         name: "some name",
-        price: "120.5"
+        price: 120.5
       })
       |> Cashier.Products.create_product()
 

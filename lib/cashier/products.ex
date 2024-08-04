@@ -34,6 +34,19 @@ defmodule Cashier.Products do
   def get_product(id), do: ProductStore.get(id)
 
   @doc """
+  Gets the list of products by ids.
+
+  ## Examples
+
+      iex> get_products(ids)
+      [%Product{}, ...]
+
+  """
+  def get_products(ids) do
+    ProductStore.get_products(ids)
+  end
+
+  @doc """
   Creates a product.
 
   ## Examples

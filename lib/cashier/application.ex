@@ -13,6 +13,7 @@ defmodule Cashier.Application do
       # {Cashier.Worker, arg},
       {Cashier.Products.ProductStore, []},
       {Cashier.Discounts.DiscountStore, []},
+      {Cashier.Carts.CartStore, []},
       # Start to serve requests, typically the last entry
       CashierWeb.Endpoint
     ]
