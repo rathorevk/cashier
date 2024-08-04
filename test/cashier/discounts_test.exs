@@ -13,8 +13,8 @@ defmodule Cashier.DiscountsTest do
     name: nil,
     type: nil,
     product_id: nil,
-    threshold_qty: nil,
-    value: nil
+    buy: nil,
+    get: nil
   }
 
   describe "discounts" do
@@ -43,8 +43,8 @@ defmodule Cashier.DiscountsTest do
         name: "some new name",
         type: "percentage",
         product_id: product.code,
-        threshold_qty: 5,
-        value: 10
+        buy: 5,
+        get: 10
       }
 
       assert {:ok, %Discount{} = discount} = Discounts.create_discount(valid_attrs)
@@ -52,8 +52,8 @@ defmodule Cashier.DiscountsTest do
       assert discount.name == "some new name"
       assert discount.type == "percentage"
       assert discount.product_id == product.code
-      assert discount.threshold_qty == 5
-      assert discount.value == 10
+      assert discount.buy == 5
+      assert discount.get == 10
     end
 
     test "create_discount/1 with invalid data returns error" do
@@ -62,8 +62,8 @@ defmodule Cashier.DiscountsTest do
         name: "some name",
         type: "some type",
         product_id: "GR1",
-        threshold_qty: 2,
-        value: 1
+        buy: 2,
+        get: 1
       }
 
       assert {:error, :INVALID_CODE} = Discounts.create_discount(attrs_invalid_code)
@@ -73,8 +73,8 @@ defmodule Cashier.DiscountsTest do
         name: "some name",
         type: "some type",
         product_id: nil,
-        threshold_qty: 2,
-        value: 1
+        buy: 2,
+        get: 1
       }
 
       assert {:error, :INVALID_PRODUCT_ID} = Discounts.create_discount(attrs_invalid_product)
@@ -84,11 +84,11 @@ defmodule Cashier.DiscountsTest do
         name: "some name",
         type: "some type",
         product_id: "GR1",
-        threshold_qty: nil,
-        value: 1
+        buy: nil,
+        get: 1
       }
 
-      assert {:error, :INVALID_THRESHOLD_QTY} = Discounts.create_discount(attrs_invalid_qty)
+      assert {:error, :INVALID_BUY_QTY} = Discounts.create_discount(attrs_invalid_qty)
     end
 
     test "update_discount/2 with valid data updates the discount" do
@@ -99,15 +99,15 @@ defmodule Cashier.DiscountsTest do
         name: "some updated name",
         type: "percentage",
         product_id: product.code,
-        value: 50
+        get: 50
       }
 
       assert {:ok, %Discount{} = discount} = Discounts.update_discount(discount, update_attrs)
       assert discount.name == "some updated name"
       assert discount.type == "percentage"
       assert discount.product_id == product.code
-      assert discount.threshold_qty == 2
-      assert discount.value == 50
+      assert discount.buy == 2
+      assert discount.get == 50
     end
 
     test "update_discount/2 with invalid data returns error" do

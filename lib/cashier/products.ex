@@ -15,6 +15,7 @@ defmodule Cashier.Products do
       [%Product{}, ...]
 
   """
+  @spec list_products() :: [Product.t()]
   def list_products do
     ProductStore.all()
   end
@@ -31,6 +32,7 @@ defmodule Cashier.Products do
       {:error, :NOT_FOUND}
 
   """
+  @spec get_product(Product.code()) :: {:ok, Product.t()} | {:error, :NOT_FOUND}
   def get_product(id), do: ProductStore.get(id)
 
   @doc """
@@ -42,6 +44,7 @@ defmodule Cashier.Products do
       [%Product{}, ...]
 
   """
+  @spec get_products([Product.code()]) :: [Product.t()]
   def get_products(ids) do
     ProductStore.get_products(ids)
   end
@@ -58,6 +61,7 @@ defmodule Cashier.Products do
       {:error, any()}
 
   """
+  @spec create_product(map()) :: {:ok, Product.t()} | {:error, :PRODUCT_EXISTS}
   def create_product(attrs \\ %{}) do
     with {:ok, %Product{} = product} <- Product.validate(attrs),
          {:error, :NOT_FOUND} <- get_product(attrs.code),
@@ -72,6 +76,16 @@ defmodule Cashier.Products do
     end
   end
 
+  @spec create_products(map()) :: [Product.t()]
+  def create_products(attrs) do
+    attrs
+    |> Enum.map(&create_product/1)
+    |> Enum.reduce([], fn
+      {:ok, value}, acc -> [value | acc]
+      {:error, _}, acc -> acc
+    end)
+  end
+
   @doc """
   Updates a product.
 
@@ -84,6 +98,7 @@ defmodule Cashier.Products do
       {:error, any()}
 
   """
+  @spec update_product(Product.t(), map()) :: {:ok, Product.t()} | {:error, :NOT_FOUND}
   def update_product(%Product{code: code} = product, attrs) do
     with {:ok, %Product{} = product} <- Product.validate(product, attrs),
          {:ok, %Product{}} <- get_product(code),
@@ -107,6 +122,7 @@ defmodule Cashier.Products do
       {:error, any()}
 
   """
+  @spec delete_product(Product.t()) :: :ok
   def delete_product(%Product{} = product) do
     ProductStore.delete(product)
   end
@@ -120,6 +136,7 @@ defmodule Cashier.Products do
       :ok
 
   """
+  @spec delete_all() :: :ok
   def delete_all do
     ProductStore.delete_all()
   end

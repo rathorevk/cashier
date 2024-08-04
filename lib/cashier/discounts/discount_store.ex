@@ -70,11 +70,11 @@ defmodule Cashier.Discounts.DiscountStore do
       name: name,
       type: type,
       product_id: product_id,
-      threshold_qty: threshold_qty,
-      value: value
+      buy: buy_qty,
+      get: get
     } = discount
 
-    :ets.insert(@table_name, {code, name, type, product_id, threshold_qty, value})
+    :ets.insert(@table_name, {code, name, type, product_id, buy_qty, get})
     {:reply, {:ok, discount}, state}
   end
 
@@ -100,27 +100,27 @@ defmodule Cashier.Discounts.DiscountStore do
 
   defp format_discount([]), do: {:error, :NOT_FOUND}
 
-  defp format_discount([{code, name, type, product_id, threshold_qty, value}]) do
+  defp format_discount([{code, name, type, product_id, buy_qty, get}]) do
     {:ok,
      %Discount{
        code: code,
        name: name,
        type: type,
        product_id: product_id,
-       threshold_qty: threshold_qty,
-       value: value
+       buy: buy_qty,
+       get: get
      }}
   end
 
   defp format_discounts(discounts) do
-    Enum.map(discounts, fn {code, name, type, product_id, threshold_qty, value} ->
+    Enum.map(discounts, fn {code, name, type, product_id, buy_qty, get} ->
       %Discount{
         code: code,
         name: name,
         type: type,
         product_id: product_id,
-        threshold_qty: threshold_qty,
-        value: value
+        buy: buy_qty,
+        get: get
       }
     end)
   end

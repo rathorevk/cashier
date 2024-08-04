@@ -4,17 +4,25 @@ defmodule Cashier.Carts.Cart do
   """
 
   alias Cashier.Products
+  alias Cashier.Products.Product
 
   defstruct [:code, :products, :expected_price]
 
+  @type code :: String.t()
+  @type expected_price :: Decimal.t() | integer() | float()
+
   @type t :: %__MODULE__{
-          code: String.t(),
-          products: list(String.t()),
-          expected_price: Decimal.t() | integer()
+          code: code(),
+          products: list(Product.code()),
+          expected_price: expected_price()
         }
 
-  def validate(cart, params) do
-    validate(Map.merge(cart, params))
+  def validate(%__MODULE__{products: products} = cart, product, :add = _ops) do
+    validate(%{cart | products: products ++ [product]})
+  end
+
+  def validate(%__MODULE__{products: products} = cart, product, :remove = _ops) do
+    validate(%{cart | products: products -- [product]})
   end
 
   def validate(%{code: code}) when not is_nil(code) and not is_binary(code) do

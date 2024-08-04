@@ -15,6 +15,7 @@ defmodule Cashier.Discounts do
       [%Discount{}, ...]
 
   """
+  @spec list_discounts() :: [Discount.t()]
   def list_discounts do
     DiscountStore.all()
   end
@@ -31,6 +32,7 @@ defmodule Cashier.Discounts do
       {:error, :not_found}
 
   """
+  @spec get_discount(Discount.code()) :: {:ok, Discount.t()} | {:error, :NOT_FOUND}
   def get_discount(code), do: DiscountStore.get(code)
 
   @doc """
@@ -45,6 +47,7 @@ defmodule Cashier.Discounts do
       {:error, any()}
 
   """
+  @spec create_discount(map()) :: {:ok, Discount.t()} | {:error, :DISCOUNT_EXISTS}
   def create_discount(attrs \\ %{}) do
     with {:ok, %Discount{} = discount} <- Discount.validate(attrs),
          {:error, :NOT_FOUND} <- get_discount(attrs.code),
@@ -59,6 +62,16 @@ defmodule Cashier.Discounts do
     end
   end
 
+  @spec create_discounts(map()) :: [Discount.t()]
+  def create_discounts(attrs) do
+    attrs
+    |> Enum.map(&create_discount/1)
+    |> Enum.reduce([], fn
+      {:ok, value}, acc -> [value | acc]
+      {:error, _}, acc -> acc
+    end)
+  end
+
   @doc """
   Updates a discount.
 
@@ -71,6 +84,7 @@ defmodule Cashier.Discounts do
       {:error, any()}
 
   """
+  @spec update_discount(Discount.t(), map()) :: {:ok, Discount.t()} | {:error, :NOT_FOUND}
   def update_discount(%Discount{code: code} = discount, attrs) do
     with {:ok, %Discount{} = discount} <- Discount.validate(discount, attrs),
          {:ok, %Discount{}} <- get_discount(code),
@@ -94,6 +108,7 @@ defmodule Cashier.Discounts do
       {:error, any()}
 
   """
+  @spec delete_discount(Discount.t()) :: :ok
   def delete_discount(%Discount{} = discount) do
     DiscountStore.delete(discount)
   end
@@ -107,6 +122,7 @@ defmodule Cashier.Discounts do
       :ok
 
   """
+  @spec delete_all() :: :ok
   def delete_all do
     DiscountStore.delete_all()
   end

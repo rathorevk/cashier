@@ -5,10 +5,14 @@ defmodule Cashier.Products.Product do
 
   defstruct [:code, :name, :price]
 
+  @type code :: String.t()
+  @type name :: String.t()
+  @type price :: Decimal.t()
+
   @type t :: %__MODULE__{
-          code: String.t(),
-          name: String.t(),
-          price: Decimal.t()
+          code: code(),
+          name: name(),
+          price: price()
         }
 
   def validate(product, params) do

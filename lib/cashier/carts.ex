@@ -19,6 +19,7 @@ defmodule Cashier.Carts do
       [%Cart{}, ...]
 
   """
+  @spec list_carts() :: [Cart.t()]
   def list_carts do
     CartStore.all()
   end
@@ -35,6 +36,7 @@ defmodule Cashier.Carts do
       {:error, :NOT_FOUND}
 
   """
+  @spec get_cart(Cart.code()) :: {:ok, Cart.t()} | {:error, :NOT_FOUND}
   def get_cart(id), do: CartStore.get(id)
 
   @doc """
@@ -49,8 +51,10 @@ defmodule Cashier.Carts do
       {:error, any()}
 
   """
-  def create_cart(attrs \\ %{}) do
-    with {:ok, %Cart{} = cart} <- Cart.validate(attrs),
+  @spec create_cart([Product.code()]) ::
+          {:ok, Cart.t()} | {:error, :PRODUCT_EXISTS | :INVALID_ARGS}
+  def create_cart(products \\ []) do
+    with {:ok, %Cart{} = cart} <- Cart.validate(%{products: products}),
          {:error, :NOT_FOUND} <- get_cart(cart.code),
          cart = apply_discounts(cart),
          {:ok, %Cart{} = cart} <- CartStore.insert(cart) do
@@ -76,12 +80,14 @@ defmodule Cashier.Carts do
       {:error, any()}
 
   """
-  def update_cart(%Cart{code: code} = cart, attrs) do
-    with {:ok, %Cart{} = cart} <- Cart.validate(cart, attrs),
-         {:ok, %Cart{}} <- get_cart(code),
-         %Cart{} = updated_cart <- apply_discounts(cart),
-         {:ok, %Cart{} = cart} <- CartStore.insert(updated_cart) do
-      {:ok, cart}
+  @spec update_cart(Cart.code(), Product.code(), atom()) ::
+          {:ok, Cart.t()} | {:error, :NOT_FOUND | :INVALID_ARGS}
+  def update_cart(cart_code, product, ops \\ :add) do
+    with {:ok, %Cart{} = cart} <- get_cart(cart_code),
+         {:ok, %Cart{} = updated_cart} <- Cart.validate(cart, product, ops) do
+      updated_cart
+      |> apply_discounts()
+      |> CartStore.insert()
     else
       {:error, _reason} = error ->
         error
@@ -100,6 +106,7 @@ defmodule Cashier.Carts do
       {:error, any()}
 
   """
+  @spec delete_cart(Cart.t()) :: :ok
   def delete_cart(%Cart{} = cart) do
     CartStore.delete(cart)
   end
@@ -113,6 +120,7 @@ defmodule Cashier.Carts do
       :ok
 
   """
+  @spec delete_all() :: :ok
   def delete_all do
     CartStore.delete_all()
   end
@@ -150,12 +158,12 @@ defmodule Cashier.Carts do
   end
 
   defp do_apply(
-         %Discount{type: :fixed, product_id: d_product_id, threshold_qty: buy_qty} = d,
+         %Discount{type: :fixed, product_id: d_product_id, buy: buy_qty} = d,
          %Product{code: code, price: price},
          product_qty
        )
        when eligible_for_discount?(code, product_qty, d_product_id, buy_qty) do
-    get_qty = d.value
+    get_qty = d.get
     # Calculate the number of sets that qualify for the discount
     sets = div(product_qty, buy_qty + get_qty)
     # Calculate the remaining items that do not qualify for a full set discount
@@ -172,12 +180,12 @@ defmodule Cashier.Carts do
     do: Decimal.mult(price, product_qty)
 
   defp do_apply(
-         %Discount{type: :percentage, product_id: d_product_id, threshold_qty: buy_qty} = d,
+         %Discount{type: :percentage, product_id: d_product_id, buy: buy_qty} = d,
          %Product{code: code, price: price},
          product_qty
        )
        when eligible_for_discount?(code, product_qty, d_product_id, buy_qty) do
-    discount_off = d.value
+    discount_off = d.get
     # Calculate the total amount before discount
     total_price = Decimal.mult(price, product_qty)
 

@@ -6,15 +6,20 @@ defmodule Cashier.Discounts.Discount do
   alias Cashier.Products
   alias Cashier.Products.Product
 
-  defstruct [:code, :name, :type, :product_id, :threshold_qty, :value]
+  defstruct [:code, :name, :type, :product_id, :buy, :get]
+
+  @type code :: String.t()
+  @type name :: String.t()
+  @type type :: :fixed | :percentage
+  @type product_id :: Product.code()
 
   @type t :: %__MODULE__{
           code: String.t(),
           name: String.t(),
           type: atom(),
           product_id: String.t(),
-          threshold_qty: integer(),
-          value: integer() | Decimal.t()
+          buy: integer(),
+          get: integer() | Decimal.t()
         }
 
   def validate(discount, params) do
@@ -27,21 +32,23 @@ defmodule Cashier.Discounts.Discount do
   def validate(%{name: name}) when not is_binary(name),
     do: {:error, :INVALID_NAME}
 
-  def validate(%{threshold_qty: threshold_qty}) when not is_integer(threshold_qty),
-    do: {:error, :INVALID_THRESHOLD_QTY}
+  def validate(%{buy: buy_qty}) when not is_integer(buy_qty),
+    do: {:error, :INVALID_BUY_QTY}
 
-  def validate(%{product_id: product_id, type: type, value: value} = params) do
+  def validate(%{product_id: product_id, type: type, get: get} = params) do
     with {:product, true} <- valid_product(product_id),
          {:type, true} <- valid_type(type),
-         true <- valid_value?(value) do
+         true <- valid_get_value?(get) do
+      get_value = (is_float(get) && Decimal.from_float(get)) || get
+
       {:ok,
        %__MODULE__{
          code: params.code,
          name: params.name,
          type: params.type,
          product_id: params.product_id,
-         threshold_qty: params.threshold_qty,
-         value: value
+         buy: params.buy,
+         get: get_value
        }}
     else
       {:product, false} ->
@@ -51,7 +58,7 @@ defmodule Cashier.Discounts.Discount do
         {:error, :INVALID_TYPE}
 
       false ->
-        {:error, :INVALID_VALUE}
+        {:error, :INVALID_GET_VALUE}
     end
   end
 
@@ -68,10 +75,11 @@ defmodule Cashier.Discounts.Discount do
   defp valid_type(type),
     do: {:type, type in [:fixed, :percentage]}
 
-  defp valid_value?(price) do
+  defp valid_get_value?(get) do
     try do
-      price = Decimal.new(price)
-      Decimal.compare(price, Decimal.new(0)) != :lt
+      get = (is_float(get) && Decimal.from_float(get)) || Decimal.new(get)
+
+      Decimal.compare(get, Decimal.new(0)) != :lt
     rescue
       _exception ->
         false

@@ -63,9 +63,11 @@ defmodule Cashier.Carts.CartStore do
   @impl true
   def handle_call({:add_cart, %Cart{} = cart}, _from, state) do
     %Cart{code: code, products: products, expected_price: expected_price} = cart
-    code = code || generate_code(state.counter)
 
+    code = code || generate_code(state.counter)
+    expected_price = Decimal.round(expected_price, 2)
     cart = %Cart{code: code, products: products, expected_price: expected_price}
+
     :ets.insert(@table_name, {code, products, expected_price})
     {:reply, {:ok, cart}, %{state | counter: state.counter + 1}}
   end

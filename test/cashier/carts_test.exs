@@ -9,7 +9,7 @@ defmodule Cashier.CartsTest do
   import Cashier.CartsFixtures
   import Cashier.ProductsFixtures
 
-  @invalid_attrs %{code: nil, products: nil, expected_price: nil}
+  @invalid_attrs nil
 
   describe "carts" do
     setup do
@@ -32,7 +32,7 @@ defmodule Cashier.CartsTest do
 
     test "create_cart/1 with valid data creates a cart" do
       product = product_fixture()
-      valid_attrs = %{products: [product.code]}
+      valid_attrs = [product.code]
 
       assert {:ok, %Cart{} = cart} = Carts.create_cart(valid_attrs)
 
@@ -47,17 +47,16 @@ defmodule Cashier.CartsTest do
     test "update_cart/2 with valid data updates the cart" do
       cart_fixture = cart_fixture()
       product = product_fixture(%{code: "UUS1"})
-      update_attrs = %{products: [product.code, product.code]}
 
-      assert {:ok, %Cart{} = cart} = Carts.update_cart(cart_fixture, update_attrs)
+      assert {:ok, %Cart{} = cart} = Carts.update_cart(cart_fixture.code, product.code)
       assert cart.code == cart_fixture.code
-      assert cart.products == [product.code, product.code]
-      assert cart.expected_price == Decimal.mult(product.price, 2)
+      assert cart.products == cart_fixture.products ++ [product.code]
+      assert cart.expected_price == Decimal.mult(product.price, 3)
     end
 
     test "update_cart/2 with invalid data returns error" do
       cart = cart_fixture()
-      assert {:error, :INVALID_PRODUCTS} = Carts.update_cart(cart, @invalid_attrs)
+      assert {:error, :INVALID_PRODUCTS} = Carts.update_cart(cart.code, nil)
       assert {:ok, cart} == Carts.get_cart(cart.code)
     end
 

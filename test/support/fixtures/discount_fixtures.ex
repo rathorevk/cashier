@@ -15,8 +15,8 @@ defmodule Cashier.DiscountsFixtures do
         name: "some name",
         type: :fixed,
         product_id: attrs[:product_id] || Cashier.ProductsFixtures.product_fixture().code,
-        threshold_qty: 2,
-        value: 1
+        buy: 2,
+        get: 1
       })
       |> Cashier.Discounts.create_discount()
 

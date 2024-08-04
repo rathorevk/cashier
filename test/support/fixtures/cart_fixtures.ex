@@ -7,18 +7,11 @@ defmodule Cashier.CartsFixtures do
   @doc """
   Generate a cart.
   """
-  def cart_fixture(attrs \\ %{}) do
+  def cart_fixture() do
     product = Cashier.ProductsFixtures.product_fixture()
     _discount = Cashier.DiscountsFixtures.discount_fixture(%{product_id: product.code})
 
-    {:ok, cart} =
-      attrs
-      |> Enum.into(%{
-        code: nil,
-        products: [product.code, product.code],
-        expected_price: nil
-      })
-      |> Cashier.Carts.create_cart()
+    {:ok, cart} = Cashier.Carts.create_cart([product.code, product.code])
 
     cart
   end
